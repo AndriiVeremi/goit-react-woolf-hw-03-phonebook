@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { nanoid } from 'nanoid';
-import { RiContactsBookFill } from "react-icons/ri";
+import { RiContactsBookFill } from 'react-icons/ri';
 import { ContactForm } from '../ContactForm/ContactForm';
 import { ContactList } from '../ContactList/ContactList';
 import { ContactFilter } from '../ContactFilter/ContactFilter';
@@ -8,12 +8,7 @@ import { Container, Title, Span, SubTitle, Text } from './App.styled';
 
 export class App extends Component {
   state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
+    contacts: [],
     filter: '',
   };
 
@@ -25,14 +20,22 @@ export class App extends Component {
       ...data,
     };
 
-    if (contacts.find(contact => contact.name.toLocaleLowerCase() === newContact.name.toLocaleLowerCase())) {
-      alert(`${newContact.name} вже існує`);
+    if (
+      contacts.find(
+        contact =>
+          contact.name.toLocaleLowerCase() ===
+          newContact.name.toLocaleLowerCase()
+      )
+    ) {
+      alert(`${newContact.name} is already in contacts.`);
       return;
     }
 
     this.setState(prevState => ({
       contacts: [...prevState.contacts, newContact],
     }));
+
+    localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
   };
 
   findContacts = e => {
@@ -42,7 +45,7 @@ export class App extends Component {
     });
   };
 
-  deletContacts = id => {
+  deleteContacts = id => {
     this.setState(prev => ({
       contacts: prev.contacts.filter(item => item.id !== id),
     }));
@@ -56,13 +59,29 @@ export class App extends Component {
     );
   };
 
+  componentDidMount() {
+    this.setState({
+      contacts: JSON.parse(localStorage.getItem('contacts')) || []
+    });
+  }
+
+  componentDidUpdate(prevProps, prevStage) {
+    if (this.state.contacts !== prevStage.contacts) {
+      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+    }
+  }
+
   render() {
     const visibleContacts = this.viewContacts();
 
     return (
       <Container>
-        <RiContactsBookFill style={{width:'100px', height:'100px', color:'#3373e2'}}/>
-        <Title>Phone<Span>book</Span></Title>
+        <RiContactsBookFill
+          style={{ width: '100px', height: '100px', color: '#3373e2' }}
+        />
+        <Title>
+          Phone<Span>book</Span>
+        </Title>
         <ContactForm setContacts={this.addContacts} />
         <SubTitle>Contacts List</SubTitle>
         <ContactFilter
@@ -75,7 +94,7 @@ export class App extends Component {
         ) : (
           <ContactList
             data={visibleContacts}
-            deletContacts={this.deletContacts}
+            deleteContacts={this.deleteContacts}
           />
         )}
       </Container>
