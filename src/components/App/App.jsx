@@ -1,5 +1,7 @@
 import { Component } from 'react';
 import { nanoid } from 'nanoid';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import { Report } from 'notiflix/build/notiflix-report-aio';
 import { RiContactsBookFill } from 'react-icons/ri';
 import { ContactForm } from '../ContactForm/ContactForm';
 import { ContactList } from '../ContactList/ContactList';
@@ -27,8 +29,13 @@ export class App extends Component {
           newContact.name.toLocaleLowerCase()
       )
     ) {
-      alert(`${newContact.name} is already in contacts.`);
-      return;
+      return Report.failure(
+        'Sorry',
+        `Such contact "${newContact.name}" already exists in your phonebook.`,
+        'Ok'
+      );
+    } else {
+      Notify.success(`You added a new contact: ${newContact.name}`);
     }
 
     this.setState(prevState => ({
@@ -49,6 +56,7 @@ export class App extends Component {
     this.setState(prev => ({
       contacts: prev.contacts.filter(item => item.id !== id),
     }));
+    Notify.success('Contact successfully deleted.');
   };
 
   viewContacts = () => {
@@ -61,11 +69,11 @@ export class App extends Component {
 
   componentDidMount() {
     this.setState({
-      contacts: JSON.parse(localStorage.getItem('contacts')) || []
+      contacts: JSON.parse(localStorage.getItem('contacts')) || [],
     });
   }
 
-  componentDidUpdate(prevProps, prevStage) {
+  componentDidUpdate(_, prevStage) {
     if (this.state.contacts !== prevStage.contacts) {
       localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
     }
